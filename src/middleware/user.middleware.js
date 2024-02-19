@@ -1,5 +1,7 @@
 const errorTypes = require("../constant/error.types");
 const userService = require("../services/user.services")
+const md5password = require('../utils/passwordHandle');
+
 
 async function verifyUser(ctx, next) {
   const { name, password } = ctx.request.body;
@@ -18,6 +20,14 @@ async function verifyUser(ctx, next) {
   await next();
 }
 
+
+async function handlePassword(ctx,next) {
+  const password = ctx.request.body.password
+  ctx.request.body.password = md5password(password);
+  await next()
+}
+
 module.exports = {
   verifyUser,
+  handlePassword
 };
