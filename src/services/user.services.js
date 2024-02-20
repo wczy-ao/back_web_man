@@ -18,7 +18,6 @@ class UserService {
     try {
       const statement = `SELECT * FROM users WHERE name = ?`;
       const results = await connections.execute(statement, [name]);
-      console.log("查到了：",results)
       return results[0];
     } catch (error) {
       console.log(error);

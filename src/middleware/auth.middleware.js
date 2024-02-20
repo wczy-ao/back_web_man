@@ -1,6 +1,9 @@
 const errorTypes = require("../constant/error.types");
 const userService = require("../services/user.services")
+const jwt = require("jsonwebtoken");
 const md5password = require('../utils/passwordHandle');
+const { PUBLIC_KEY } = require("../app/config");
+
 
 
 async function verifyLogin(ctx, next) {
@@ -25,12 +28,36 @@ async function verifyLogin(ctx, next) {
     return ctx.app.emit('error', error, ctx);
   }
 
-  ctx.body = 'dddd'
+  ctx.user = user
 
-  // await next();
+  await next();
 }
 
 
+const verifyAuth = async (ctx, next) => {
+  console.log('验证授权的middleware~');
+  // 1、获取token
+  const authorization = ctx.headers.authorization;
+  if (!authorization) {
+    const error = new Error(errorTypes.UNAUTHORIZATION);
+    return ctx.app.emit('error', error, ctx);
+  }
+  const token = authorization.replace('Bearer ', '');
+  try {
+    // 2、验证token(id/name/iat/exp)
+    const result = jwt.verify(token, PUBLIC_KEY, {
+      algorithms: ['RS256']
+    });
+    ctx.user = result;
+    await next();
+  } catch (err) {
+    const error = new Error(errorTypes.UNAUTHORIZATION);
+    ctx.app.emit('error', error, ctx);
+  }
+};
+
+
 module.exports = {
-  verifyLogin
+  verifyLogin,
+  verifyAuth
 };

@@ -1,13 +1,19 @@
-const service = require("../services/user.services")
-class UserController {
-    async create(ctx,next) {
-        const userinfo = ctx.request.body
-        // 参数判断
-        // 数据库处理
-        const result = await service.create(userinfo)
-        //返回
-        ctx.body = result
-    }
+const service = require("../services/user.services");
+const jwt = require("jsonwebtoken");
+const { PRIVATE_KEY } = require("../app/config");
+class AuthController {
+  async login(ctx, next) {
+    const { name, password } = ctx.user;
+    // 公私钥方式形成jwt
+    const token = jwt.sign({ name, password }, PRIVATE_KEY, {
+      expiresIn: 30 * 24 * 3600,
+      algorithm: "RS256",
+    });
+    ctx.body = {
+      name,
+      token,
+    };
+  }
 }
 
-module.exports = new UserController()
+module.exports = new AuthController();
